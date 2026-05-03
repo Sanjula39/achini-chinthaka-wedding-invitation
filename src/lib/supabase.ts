@@ -14,7 +14,7 @@ export interface RSVPResponse {
   error?: string;
 }
 
-/** Publishable (new) or legacy anon JWT — both work with createClient. */
+/** Publishable (new) or legacy anon JWT — browser helpers only */
 function getPublicSupabaseKey(): string | undefined {
   return (
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ||
@@ -22,33 +22,23 @@ function getPublicSupabaseKey(): string | undefined {
   );
 }
 
-let client: SupabaseClient | null = null;
+let browserClient: SupabaseClient | null = null;
 
 function getSupabaseBrowser(): SupabaseClient | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const key = getPublicSupabaseKey();
   if (!url || !key) return null;
-  if (!client) client = createClient(url, key);
-  return client;
+  if (!browserClient) browserClient = createClient(url, key);
+  return browserClient;
 }
 
 /**
- * Submit an RSVP row to Supabase table `rsvps`.
- * Uses insert-only (no `.select()`) so RLS can allow anon INSERT without SELECT.
+ * Shared insert logic — used by POST /api/rsvp (production) and tests.
  */
-export async function submitRSVP(
+export async function insertRSVPRecord(
+  supabase: SupabaseClient,
   payload: Omit<RSVPPayload, "submitted_at">
 ): Promise<RSVPResponse> {
-  const supabase = getSupabaseBrowser();
-  if (!supabase) {
-    return {
-      success: false,
-      message: "Failed to submit RSVP.",
-      error:
-        "Missing Supabase env: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY) in .env.local.",
-    };
-  }
-
   const submitted_at = new Date().toISOString();
   const row = {
     full_name: payload.full_name,
@@ -103,6 +93,48 @@ export async function submitRSVP(
       : "Thank you for letting us know. We'll miss you!",
     data: record,
   };
+}
+
+/**
+ * Submit RSVP via API route — reads Supabase env on the server (works reliably on Vercel).
+ */
+export async function submitRSVP(
+  payload: Omit<RSVPPayload, "submitted_at">
+): Promise<RSVPResponse> {
+  try {
+    const res = await fetch("/api/rsvp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    let data: RSVPResponse;
+    try {
+      data = (await res.json()) as RSVPResponse;
+    } catch {
+      return {
+        success: false,
+        message: "Failed to submit RSVP.",
+        error: "Unexpected server response. Please try again.",
+      };
+    }
+
+    if (!data || typeof data.success !== "boolean") {
+      return {
+        success: false,
+        message: "Failed to submit RSVP.",
+        error: `Server error (${res.status}). Please try again.`,
+      };
+    }
+
+    return data;
+  } catch {
+    return {
+      success: false,
+      message: "Failed to submit RSVP.",
+      error: "Network error. Please check your connection.",
+    };
+  }
 }
 
 /**
