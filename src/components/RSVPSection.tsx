@@ -5,67 +5,53 @@ import { motion, AnimatePresence } from "framer-motion";
 import { submitRSVP } from "@/lib/supabase";
 import MandalaMotif from "./MandalaMotif";
 
-type AttendingOption = "yes" | "no" | null;
-
-interface FormState {
-  fullName:        string;
-  whatsappNumber:  string;
-  attending:       AttendingOption;
-}
+const GUEST_COUNT_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
 interface SubmitStatus {
   type:    "success" | "error" | null;
   message: string;
 }
 
-const initialForm: FormState = {
-  fullName:       "",
-  whatsappNumber: "",
-  attending:      null,
-};
-
 export default function RSVPSection() {
-  const [form,      setForm]      = useState<FormState>(initialForm);
+  const [guestCount, setGuestCount] = useState<number>(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [status,    setStatus]    = useState<SubmitStatus>({ type: null, message: "" });
+  const [pendingChoice, setPendingChoice] = useState<"yes" | "no" | null>(null);
+  const [status, setStatus] = useState<SubmitStatus>({ type: null, message: "" });
 
-  const isValid =
-    form.fullName.trim().length >= 2 &&
-    form.whatsappNumber.trim().length >= 9 &&
-    form.attending !== null;
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!isValid || isLoading) return;
+  async function submitChoice(attending: boolean) {
+    if (isLoading) return;
 
     setIsLoading(true);
+    setPendingChoice(attending ? "yes" : "no");
     setStatus({ type: null, message: "" });
 
     try {
       const result = await submitRSVP({
-        full_name:        form.fullName.trim(),
-        whatsapp_number:  form.whatsappNumber.trim(),
-        attending:        form.attending === "yes",
+        attending,
+        guest_count: attending ? guestCount : null,
       });
 
       if (result.success) {
         setStatus({ type: "success", message: result.message });
-        setForm(initialForm);
       } else {
-        setStatus({ type: "error", message: result.error ?? "Something went wrong. Please try again." });
+        setStatus({
+          type: "error",
+          message: result.error ?? "Something went wrong. Please try again.",
+        });
       }
     } catch {
-      setStatus({ type: "error", message: "Network error. Please check your connection." });
+      setStatus({
+        type: "error",
+        message: "Network error. Please check your connection.",
+      });
     } finally {
       setIsLoading(false);
+      setPendingChoice(null);
     }
   }
 
-  const inputBase =
-    "form-input w-full min-h-[52px] px-6 py-4 rounded-xl font-body text-base text-[#2C2C2C] bg-[#FFFCF7] border-2 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-300 placeholder:text-[#9a8a6e]";
-
-  const labelBase =
-    "block font-display text-[11px] sm:text-xs tracking-[0.2em] uppercase font-semibold text-[#7A5310]";
+  const choiceBtnBase =
+    "relative w-full min-h-[58px] sm:min-h-[60px] rounded-xl text-center font-display text-[11px] sm:text-xs font-semibold tracking-[0.12em] sm:tracking-[0.14em] uppercase border-2 leading-tight px-5 py-4 transition-shadow duration-200 disabled:opacity-55 disabled:cursor-not-allowed";
 
   return (
     <section
@@ -125,9 +111,9 @@ export default function RSVPSection() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.3 }}
-          className="font-body text-sm sm:text-[15px] text-[#5a5a5a] mb-10 sm:mb-12 leading-relaxed max-w-md mx-auto"
+          className="font-body text-sm sm:text-[15px] text-[#5a5a5a] mb-8 sm:mb-10 leading-relaxed max-w-md mx-auto"
         >
-          Kindly let us know if you will be joining us for this special day. Your presence means the world to us.
+          Your presence means the world to us. Choose how many guests your invitation covers (family count), then tap Accept or Decline — no name or phone needed.
         </motion.p>
 
         {/* ── Form ── */}
@@ -240,190 +226,132 @@ export default function RSVPSection() {
                       initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.32, duration: 0.45 }}
-                      className="w-full max-w-[22rem] px-3 font-body text-[15px] leading-relaxed text-[#4a453c] text-center text-pretty sm:text-base"
+                      className="w-full max-w-[22rem] px-3 pb-1 font-body text-[15px] leading-relaxed text-[#4a453c] text-center text-pretty sm:text-base"
                     >
                       {status.message}
                     </motion.p>
-
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.45, duration: 0.4 }}
-                      className="mt-11 flex w-full shrink-0 justify-center px-2 sm:mt-12"
-                    >
-                      <motion.button
-                        type="button"
-                        onClick={() => setStatus({ type: null, message: "" })}
-                        whileHover={{ scale: 1.03, boxShadow: "0 6px 24px rgba(201,151,58,0.22)" }}
-                        whileTap={{ scale: 0.98 }}
-                        className="inline-flex min-h-[48px] max-w-full items-center justify-center rounded-full border-2 border-[#C9973A]/55 bg-[#FFFCF7]/90 px-8 font-display text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7A5310] shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] transition-colors hover:border-[#C9973A]/80 hover:bg-[#FDF8F0]"
-                      >
-                        Submit another response
-                      </motion.button>
-                    </motion.div>
                   </div>
                 </div>
               </div>
             </motion.div>
           ) : (
-            <motion.form
+            <motion.div
               key="form"
-              onSubmit={handleSubmit}
+              role="group"
+              aria-label="RSVP — tap once to submit"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
-              className="text-left space-y-10 sm:space-y-12 rounded-2xl w-full max-w-[min(100%,26rem)] sm:max-w-md mx-auto border-2 border-[#C9973A]/25 p-[12px] sm:p-10 md:p-12"
-              style={{padding: "15px",
-                background: "linear-gradient(165deg, #FFFCF7 0%, #FAF5EC 55%, #F5ECD8 100%)",
-                boxShadow: "0 12px 48px rgba(0,0,0,0.07), 0 4px 14px rgba(201,151,58,0.12)",
+              className="text-center rounded-2xl w-full max-w-[min(100%,26rem)] sm:max-w-md mx-auto border-2 border-[#C9973A]/25 p-[15px] sm:p-10 md:p-11"
+              style={{
+                background:
+                  "linear-gradient(165deg, #FFFCF7 0%, #FAF5EC 55%, #F5ECD8 100%)",
+                boxShadow:
+                  "0 12px 48px rgba(0,0,0,0.07), 0 4px 14px rgba(201,151,58,0.12)",
+                  padding: "15px",
               }}
-              noValidate
-              aria-label="RSVP Form"
             >
+              <p className="font-display text-[11px] sm:text-xs tracking-[0.22em] uppercase font-semibold text-[#7A5310] mb-5">
+                Will you be attending?
+              </p>
 
-              {/* Full Name */}
-              <div className="flex flex-col gap-3">
-                <label htmlFor="rsvp-full-name" className={labelBase}>
-                  Full Name
-                </label>
-                <input
-                  id="rsvp-full-name"
-                  type="text"
-                  name="fullName"
-                  value={form.fullName}
-                  onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                  placeholder="e.g. Dilhani Perera"
-                  required
-                  minLength={2}
-                  className={`${inputBase} border-[#C9973A]/38 hover:border-[#C9973A]/55`}
-                  aria-required="true"
-                  autoComplete="name"
-                />
-              </div>
-
-              {/* WhatsApp Number */}
-              <div className="flex flex-col gap-3">
-                <label htmlFor="rsvp-whatsapp" className={labelBase}>
-                  WhatsApp Number
-                </label>
-                <input
-                  id="rsvp-whatsapp"
-                  type="tel"
-                  name="whatsappNumber"
-                  value={form.whatsappNumber}
-                  onChange={(e) => setForm({ ...form, whatsappNumber: e.target.value })}
-                  placeholder="+94 7X XXX XXXX"
-                  required
-                  className={`${inputBase} border-[#C9973A]/38 hover:border-[#C9973A]/55`}
-                  aria-required="true"
-                  autoComplete="tel"
-                />
-              </div>
-
-              {/* Attending */}
-              <div className="flex flex-col gap-5 pt-1">
-                <p id="attending-label" className={labelBase}>
-                  Will you be attending?
-                </p>
-                <div
-                  className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5"
-                  role="radiogroup"
-                  aria-labelledby="attending-label"
+              <div className="mb-6 flex w-full flex-col items-stretch text-center">
+                <label
+                  htmlFor="rsvp-guest-count"
+                  className="mb-2 block font-display text-[11px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-[#7A5310]"
                 >
-                  {(["yes", "no"] as const).map((option) => (
-                    <label
-                      key={option}
-                      htmlFor={`rsvp-attending-${option}`}
-                      className="relative cursor-pointer block"
-                    >
-                      <input
-                        id={`rsvp-attending-${option}`}
-                        type="radio"
-                        name="attending"
-                        value={option}
-                        checked={form.attending === option}
-                        onChange={() => setForm({ ...form, attending: option })}
-                        className="sr-only"
-                        aria-checked={form.attending === option}
-                      />
-                      <motion.div
-                        animate={{
-                          background:
-                            form.attending === option
-                              ? "linear-gradient(135deg, #C9973A, #E8B238)"
-                              : "#FFFCF7",
-                          borderColor:
-                            form.attending === option
-                              ? "#B8831E"
-                              : "rgba(201,151,58,0.42)",
-                          color:
-                            form.attending === option ? "#FDF8F0" : "#2C2C2C",
-                        }}
-                        transition={{ duration: 0.25 }}
-                        className="min-h-[52px] flex items-center justify-center px-5 py-3.5 sm:px-6 rounded-xl text-center font-display text-[11px] sm:text-xs font-semibold tracking-[0.12em] sm:tracking-wider uppercase border-2 leading-tight"
-                        style={{
-                          boxShadow: form.attending === option
-                            ? "0 6px 20px rgba(201,151,58,0.35)"
-                            : "inset 0 1px 0 rgba(255,255,255,0.85)",
-                        }}
-                      >
-                        <span className="text-center px-1">
-                          {option === "yes" ? "✓  Joyfully Accept" : "✗  Regretfully Decline"}
-                        </span>
-                      </motion.div>
-                    </label>
+                  Guests (incl. you) 
+                </label>
+                <select
+                  id="rsvp-guest-count"
+                  value={guestCount}
+                  disabled={isLoading}
+                  onChange={(e) => setGuestCount(Number(e.target.value))}
+                  aria-describedby="rsvp-guest-count-hint"
+                  className="w-full min-h-[52px] cursor-pointer appearance-none rounded-xl border-2 border-[#C9973A]/38 bg-[#FFFCF7] py-3.5 pl-4 pr-11 font-body text-base text-[#2C2C2C] text-center shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:border-[#C9973A]/55 focus:border-[#B8831E] focus:outline-none focus:ring-2 focus:ring-[#C9973A]/25 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-[56px] sm:text-[17px]"
+                  style={{
+                    backgroundImage:
+                      "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237A5310' d='M6 8L1 3h10z'/%3E%3C/svg%3E\")",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "right 1rem center",
+                  }}
+                >
+                  {GUEST_COUNT_OPTIONS.map((n) => (
+                    <option key={n} value={n}>
+                      {n} {n === 1 ? "guest" : "guests"}
+                    </option>
                   ))}
-                </div>
+                </select>
+                <p
+                  id="rsvp-guest-count-hint"
+                  className="mt-2 text-center font-body text-xs leading-snug text-[#5a5a5a]"
+                >
+                  Used when you accept so we can plan seating. Ignored if you decline.
+                </p>
               </div>
 
-              {/* Error message */}
+              <div className="flex flex-col gap-4 sm:gap-5">
+                <motion.button
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => submitChoice(true)}
+                  whileHover={!isLoading ? { scale: 1.02 } : {}}
+                  whileTap={!isLoading ? { scale: 0.98 } : {}}
+                  aria-busy={isLoading && pendingChoice === "yes"}
+                  className={`${choiceBtnBase} inline-flex items-center justify-center gap-3 bg-[#FFFCF7] border-[rgba(201,151,58,0.42)] text-[#2C2C2C] shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] hover:border-[#C9973A]/65 hover:shadow-[0_6px_22px_rgba(201,151,58,0.2)]`}
+                >
+                  {isLoading && pendingChoice === "yes" ? (
+                    <>
+                      <motion.span
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="inline-block h-5 w-5 shrink-0 rounded-full border-2 border-[#C9973A]/35 border-t-[#C9973A]"
+                        aria-hidden
+                      />
+                      <span>Sending…</span>
+                    </>
+                  ) : (
+                    <span className="px-1">✓ Joyfully Accept</span>
+                  )}
+                </motion.button>
+
+                <motion.button
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => submitChoice(false)}
+                  whileHover={!isLoading ? { scale: 1.02 } : {}}
+                  whileTap={!isLoading ? { scale: 0.98 } : {}}
+                  aria-busy={isLoading && pendingChoice === "no"}
+                  className={`${choiceBtnBase} inline-flex items-center justify-center gap-3 bg-[#FFFCF7] border-[rgba(201,151,58,0.42)] text-[#2C2C2C] shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] hover:border-[#C9973A]/65 hover:shadow-[0_6px_22px_rgba(201,151,58,0.2)]`}
+                >
+                  {isLoading && pendingChoice === "no" ? (
+                    <>
+                      <motion.span
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="inline-block h-5 w-5 shrink-0 rounded-full border-2 border-[#C9973A]/35 border-t-[#C9973A]"
+                        aria-hidden
+                      />
+                      <span>Sending…</span>
+                    </>
+                  ) : (
+                    <span className="px-1">✗ Regretfully Decline</span>
+                  )}
+                </motion.button>
+              </div>
+
               {status.type === "error" && (
                 <motion.p
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="font-body text-sm text-red-700 text-center bg-red-50/95 border-2 border-red-200/90 rounded-xl px-5 py-4 leading-snug"
+                  className="mt-6 font-body text-sm text-red-700 text-center bg-red-50/95 border-2 border-red-200/90 rounded-xl px-5 py-4 leading-snug"
                   role="alert"
                 >
                   {status.message}
                 </motion.p>
               )}
-
-              {/* Submit */}
-              <div className="mt-2 pt-5 border-t border-[#C9973A]/15">
-                <motion.button
-                  type="submit"
-                  disabled={!isValid || isLoading}
-                  whileHover={isValid && !isLoading ? { scale: 1.015 } : {}}
-                  whileTap={isValid && !isLoading ? { scale: 0.985 } : {}}
-                  className="w-full min-h-[56px] inline-flex items-center justify-center rounded-xl px-4 font-display font-semibold tracking-[0.18em] uppercase text-sm sm:text-[15px] transition-opacity duration-300 border-2 border-transparent leading-none"
-                  style={{
-                    background:
-                      isValid && !isLoading
-                        ? "linear-gradient(135deg, #C9973A 0%, #E8B238 55%, #C9973A 100%)"
-                        : "rgba(201,151,58,0.22)",
-                    color: isValid && !isLoading ? "#FDF8F0" : "#96680F",
-                    cursor: isValid && !isLoading ? "pointer" : "not-allowed",
-                    boxShadow: isValid && !isLoading ? "0 6px 24px rgba(201,151,58,0.32)" : "none",
-                  }}
-                  aria-busy={isLoading}
-                  aria-label="Submit RSVP — Confirm Attendance"
-                >
-                  {isLoading ? (
-                    <span className="inline-flex items-center justify-center gap-2.5">
-                      <motion.span
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="inline-block w-5 h-5 border-2 border-[#FDF8F0]/35 border-t-[#FDF8F0] rounded-full shrink-0"
-                      />
-                      <span className="leading-none pt-0.5">Submitting…</span>
-                    </span>
-                  ) : (
-                    <span className="leading-none py-0.5">Confirm Attendance</span>
-                  )}
-                </motion.button>
-              </div>
-            </motion.form>
+            </motion.div>
           )}
         </AnimatePresence>
 

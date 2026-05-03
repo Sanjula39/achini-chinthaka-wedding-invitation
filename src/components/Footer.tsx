@@ -31,6 +31,7 @@ export default function Footer() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
           className="mx-auto flex w-full max-w-xl flex-col items-center rounded-2xl border border-[#C9973A]/25 bg-[#FEFDF9]/65 px-[calc(1.5rem+15px)] py-[calc(2.5rem+15px)] text-center sm:px-[calc(2.5rem+15px)] sm:py-[calc(3rem+15px)] shadow-[0_12px_40px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-[2px]"
+        style={{padding: "15px"}}
         >
           {/* Symmetric accent line */}
           <div

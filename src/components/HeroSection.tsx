@@ -8,7 +8,7 @@ export default function HeroSection() {
   return (
     <section
       id="hero"
-      className="relative min-h-[calc(100svh-5rem)] flex flex-col items-center justify-start overflow-x-hidden bg-[#FDF8F0] pt-6 pb-14 sm:pt-8 md:pt-10 md:pb-16"
+      className="relative min-h-[calc(100svh-5rem)] flex flex-col items-center justify-start bg-[#FDF8F0] pt-6 pb-14 sm:pt-8 md:pt-10 md:pb-16"
       aria-label="Wedding Invitation Hero"
     >
       {/* ── Animated background mandalas ── */}

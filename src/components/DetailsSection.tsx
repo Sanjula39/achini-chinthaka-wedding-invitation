@@ -51,14 +51,14 @@ export default function DetailsSection() {
           whileInView="visible"
           viewport={{ once: true }}
           custom={0.1}
-          className="font-script text-5xl sm:text-6xl text-[#2C2C2C] mb-5 leading-tight"
+          className="font-script text-5xl sm:text-6xl text-[#2C2C2C] mb-6 sm:mb-7 leading-tight"
         >
           The Celebration
         </motion.h2>
 
         <motion.div
           aria-hidden
-          className="gold-divider mb-11 sm:mb-12 h-px w-[13rem] sm:w-[15rem] max-w-[min(15rem,85vw)] origin-center shrink-0"
+          className="gold-divider mb-12 sm:mb-14 h-px w-[13rem] sm:w-[15rem] max-w-[min(15rem,85vw)] origin-center shrink-0"
           initial={{ scaleX: 0 }}
           whileInView={{ scaleX: 1 }}
           viewport={{ once: true }}
@@ -73,7 +73,7 @@ export default function DetailsSection() {
           whileInView="visible"
           viewport={{ once: true }}
           custom={0.2}
-          className="font-body text-sm tracking-[0.2em] uppercase text-[#5a5a5a] mb-3"
+          className="font-body text-sm tracking-[0.2em] uppercase text-[#5a5a5a] mb-4"
         >
           Request the honor of your presence
         </motion.p>
@@ -83,7 +83,7 @@ export default function DetailsSection() {
           whileInView="visible"
           viewport={{ once: true }}
           custom={0.3}
-          className="font-body text-sm tracking-[0.1em] text-[#5a5a5a] mb-12 sm:mb-14"
+          className="font-body text-sm tracking-[0.1em] text-[#5a5a5a] mb-16 sm:mb-20"
         >
           To celebrate their marriage
         </motion.p>
@@ -95,7 +95,7 @@ export default function DetailsSection() {
           whileInView="visible"
           viewport={{ once: true }}
           custom={0.35}
-          className="flex w-full max-w-2xl mx-auto flex-col sm:flex-row items-center justify-center gap-5 sm:gap-8 px-5 sm:px-10 py-7 sm:py-9 rounded-2xl shadow-luxury box-border"
+          className="flex w-full max-w-2xl mx-auto flex-col sm:flex-row items-center justify-center gap-7 sm:gap-10 px-5 sm:px-10 py-9 sm:py-11 rounded-2xl shadow-luxury box-border"
           style={{ background: "linear-gradient(135deg, #FEFDF9, #FAF3E8)", border: "1px solid rgba(201,151,58,0.35)" }}
         >
           <div className="text-center">
@@ -127,7 +127,7 @@ export default function DetailsSection() {
           whileInView="visible"
           viewport={{ once: true }}
           custom={0.4}
-          className="font-display text-xl sm:text-2xl tracking-[0.35em] text-[#5a5a5a] mt-10 mb-10"
+          className="font-display text-xl sm:text-2xl tracking-[0.35em] text-[#5a5a5a] mt-14 mb-12 sm:mt-16 sm:mb-14"
         >
           2026
         </motion.p>
@@ -139,21 +139,21 @@ export default function DetailsSection() {
           whileInView="visible"
           viewport={{ once: true }}
           custom={0.45}
-          className="flex w-full max-w-2xl mx-auto flex-col items-center gap-4 mb-8 text-center"
+          className="flex w-full max-w-2xl mx-auto flex-col items-center gap-7 mb-12 text-center sm:gap-8 sm:mb-14"
         >
-          <div className="space-y-2 w-full">
+          <div className="space-y-4 w-full">
             <p className="font-display text-xl sm:text-2xl font-medium tracking-[0.2em] sm:tracking-widest text-[#2C2C2C] uppercase leading-snug">
-              From 9.00 AM to 4.30 PM
+              From 9.00 AM to 3.30 PM
             </p>
             <p className="font-body text-xs sm:text-sm tracking-[0.25em] uppercase text-[#5a5a5a]">AT</p>
           </div>
           <p className="font-display text-3xl sm:text-4xl font-bold text-[#2C2C2C] tracking-wide leading-tight">
-            Grandeeza Hotel
+            Grandeeza Hotel, Negombo
           </p>
         </motion.div>
 
         {/* ── Poruwa Ceremony Highlight Box ── */}
-        <div className="w-full max-w-2xl mx-auto flex justify-center px-1">
+        <div className="w-full max-w-2xl mx-auto mt-10 flex justify-center px-1 sm:mt-12" style={{padding: "15px"}}>
           <motion.div
             variants={fadeUp}
             initial="hidden"
@@ -164,6 +164,7 @@ export default function DetailsSection() {
             className="flex items-center justify-center px-6 sm:px-10 py-3.5 sm:py-4 rounded-xl shadow-gold-sm w-full sm:w-auto max-w-full"
             style={{
               background: "linear-gradient(135deg, #C9973A, #E8B238)",
+              padding: "10px",
             }}
           >
             <p className="font-display text-xs sm:text-sm md:text-base tracking-[0.18em] sm:tracking-[0.2em] uppercase text-[#FDF8F0] font-semibold text-center leading-snug">
@@ -179,7 +180,7 @@ export default function DetailsSection() {
           whileInView="visible"
           viewport={{ once: true }}
           custom={0.65}
-          className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 text-center w-full max-w-2xl mx-auto justify-items-stretch"
+          className="mt-16 grid grid-cols-1 sm:grid-cols-2 gap-8 text-center w-full max-w-2xl mx-auto justify-items-stretch sm:mt-20 sm:gap-10"
         >
           <div className="flex flex-col justify-center px-5 sm:px-6 py-6 rounded-xl min-h-[9rem]" style={{ background: "rgba(201,151,58,0.08)", border: "1px solid rgba(201,151,58,0.2)" }}>
             <p className="font-display text-gold-gradient text-3xl mb-3">Achini</p>

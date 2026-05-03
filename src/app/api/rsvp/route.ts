@@ -62,32 +62,57 @@ export async function POST(request: Request): Promise<NextResponse<RSVPResponse>
   }
 
   const o = body as Record<string, unknown>;
-  const full_name =
-    typeof o.full_name === "string" ? o.full_name.trim() : "";
-  const whatsapp_number =
-    typeof o.whatsapp_number === "string" ? o.whatsapp_number.trim() : "";
   const attending =
-    o.attending === true ||
-    o.attending === false
-      ? o.attending
-      : undefined;
+    o.attending === true || o.attending === false ? o.attending : undefined;
 
-  if (full_name.length < 2 || whatsapp_number.length < 9 || attending === undefined) {
+  if (attending === undefined) {
     return NextResponse.json(
       {
         success: false,
         message: "Failed to submit RSVP.",
-        error: "Please fill in all fields correctly.",
+        error: "Choose Joyfully Accept or Regretfully Decline.",
       },
       { status: 400 }
     );
   }
 
+  let guest_count: number | null = null;
+  if (attending) {
+    const raw = o.guest_count;
+    const n =
+      typeof raw === "number"
+        ? raw
+        : typeof raw === "string"
+          ? Number.parseInt(raw, 10)
+          : NaN;
+    if (!Number.isInteger(n) || n < 1 || n > 10) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Failed to submit RSVP.",
+          error: "Please choose how many guests are attending (1–10), including yourself.",
+        },
+        { status: 400 }
+      );
+    }
+    guest_count = n;
+  }
+
+  const full_name =
+    typeof o.full_name === "string" ? o.full_name.trim() : undefined;
+  const whatsapp_number =
+    typeof o.whatsapp_number === "string" ? o.whatsapp_number.trim() : undefined;
+
   const supabase = createClient(url, key);
   const result = await insertRSVPRecord(supabase, {
-    full_name,
-    whatsapp_number,
     attending,
+    guest_count,
+    ...(full_name !== undefined && full_name.length > 0
+      ? { full_name }
+      : {}),
+    ...(whatsapp_number !== undefined && whatsapp_number.length > 0
+      ? { whatsapp_number }
+      : {}),
   });
 
   const status = result.success ? 200 : 422;

@@ -1,11 +1,21 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
+/** Row shape returned from DB / API (anonymous RSVP uses null name & phone). */
 export interface RSVPPayload {
-  full_name: string;
-  whatsapp_number: string;
   attending: boolean;
   submitted_at?: string;
+  guest_count?: number | null;
+  full_name?: string | null;
+  whatsapp_number?: string | null;
 }
+
+/** Body sent from the site — `guest_count` 1–10 when accepting; null when declining. */
+export type RSVPSubmitBody = {
+  attending: boolean;
+  guest_count?: number | null;
+  full_name?: string | null;
+  whatsapp_number?: string | null;
+};
 
 export interface RSVPResponse {
   success: boolean;
@@ -37,14 +47,30 @@ function getSupabaseBrowser(): SupabaseClient | null {
  */
 export async function insertRSVPRecord(
   supabase: SupabaseClient,
-  payload: Omit<RSVPPayload, "submitted_at">
+  payload: RSVPSubmitBody
 ): Promise<RSVPResponse> {
   const submitted_at = new Date().toISOString();
+  const guest_count =
+    payload.attending &&
+    payload.guest_count != null &&
+    payload.guest_count >= 1 &&
+    payload.guest_count <= 10
+      ? payload.guest_count
+      : null;
+
   const row = {
-    full_name: payload.full_name,
-    whatsapp_number: payload.whatsapp_number,
     attending: payload.attending,
+    guest_count,
     submitted_at,
+    full_name:
+      payload.full_name !== undefined && payload.full_name !== ""
+        ? payload.full_name
+        : null,
+    whatsapp_number:
+      payload.whatsapp_number !== undefined &&
+      payload.whatsapp_number !== ""
+        ? payload.whatsapp_number
+        : null,
   };
 
   const { error } = await supabase.from("rsvps").insert(row);
@@ -57,7 +83,7 @@ export async function insertRSVPRecord(
       return {
         success: false,
         message: "Failed to submit RSVP.",
-        error: "We already have an RSVP from this WhatsApp number.",
+        error: "This response couldn’t be recorded (duplicate). Please try again.",
       };
     }
 
@@ -84,13 +110,22 @@ export async function insertRSVPRecord(
     };
   }
 
-  const record: RSVPPayload = { ...payload, submitted_at };
+  const record: RSVPPayload = {
+    attending: payload.attending,
+    guest_count: row.guest_count,
+    full_name: row.full_name,
+    whatsapp_number: row.whatsapp_number,
+    submitted_at,
+  };
+
+  const acceptMsg =
+    guest_count != null && guest_count > 1
+      ? `🎉 We're delighted to welcome your party of ${guest_count}!`
+      : "🎉 We're so excited to celebrate with you!";
 
   return {
     success: true,
-    message: payload.attending
-      ? "🎉 We're so excited to celebrate with you!"
-      : "Thank you for letting us know. We'll miss you!",
+    message: payload.attending ? acceptMsg : "Thank you for letting us know. We'll miss you!",
     data: record,
   };
 }
@@ -98,9 +133,7 @@ export async function insertRSVPRecord(
 /**
  * Submit RSVP via API route — reads Supabase env on the server (works reliably on Vercel).
  */
-export async function submitRSVP(
-  payload: Omit<RSVPPayload, "submitted_at">
-): Promise<RSVPResponse> {
+export async function submitRSVP(payload: RSVPSubmitBody): Promise<RSVPResponse> {
   try {
     const res = await fetch("/api/rsvp", {
       method: "POST",
@@ -147,7 +180,7 @@ export async function fetchRSVPs(): Promise<RSVPPayload[]> {
 
   const { data, error } = await supabase
     .from("rsvps")
-    .select("full_name, whatsapp_number, attending, submitted_at")
+    .select("full_name, whatsapp_number, attending, guest_count, submitted_at")
     .order("submitted_at", { ascending: false });
 
   if (error) {

@@ -88,7 +88,7 @@ export default function VenueSection() {
                   />
                 </svg>
               </div>
-              <div className="text-center sm:text-left flex-1 min-w-0">
+              <div className="text-center sm:text-left flex-1 min-w-0" style={{padding: "15px"}}>
                 <p className="font-display text-xl sm:text-2xl font-bold text-[#2C2C2C] mb-1.5">Grandeeza Hotel</p>
                 <p className="font-body text-sm text-[#5a5a5a] leading-relaxed">
                   772 Colombo – Negombo Rd,<br />
@@ -144,6 +144,7 @@ export default function VenueSection() {
                 backgroundSize: "200% auto",
                 animation: "shimmer 3s linear infinite",
                 boxShadow: "0 4px 20px rgba(201,151,58,0.35)",
+                padding: "15px",
               }}
               aria-label="Open Grandeeza Hotel in Google Maps for directions"
             >
