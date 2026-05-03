@@ -1,26 +1,157 @@
 @import "tailwindcss";
 
+/* ─── Tailwind v4 Theme ─────────────────────────────────────────── */
+@theme {
+  /* Fonts */
+  --font-script:  "Great Vibes", cursive;
+  --font-display: "Playfair Display", serif;
+  --font-body:    "Lato", sans-serif;
+
+  /* Gold palette */
+  --color-gold-50:  #fdf9ec;
+  --color-gold-100: #faf0cc;
+  --color-gold-200: #f5de97;
+  --color-gold-300: #efc762;
+  --color-gold-400: #e8b238;
+  --color-gold-500: #C9973A;
+  --color-gold-600: #B8831E;
+  --color-gold-700: #96680F;
+  --color-gold-800: #7A5310;
+  --color-gold-900: #5c3e0e;
+
+  /* Cream palette */
+  --color-cream-50:  #FEFDF9;
+  --color-cream-100: #FDF8F0;
+  --color-cream-200: #FAF3E8;
+  --color-cream-300: #F5ECD8;
+  --color-cream-400: #EDE1CA;
+  --color-cream-500: #E5D5B8;
+
+  /* Charcoal palette */
+  --color-charcoal-50:  #f5f5f5;
+  --color-charcoal-600: #424242;
+  --color-charcoal-700: #2C2C2C;
+  --color-charcoal-800: #1a1a1a;
+  --color-charcoal-900: #0d0d0d;
+
+  /* Box shadows */
+  --shadow-gold-glow: 0 0 20px rgba(201,151,58,0.35), 0 0 60px rgba(201,151,58,0.15);
+  --shadow-gold-sm:   0 2px 8px rgba(201,151,58,0.30);
+  --shadow-luxury:    0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(201,151,58,0.20);
+}
+
+/* ─── CSS Custom Properties ─────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --gold-primary:   #C9973A;
+  --gold-light:     #E8B238;
+  --gold-shimmer:   #F5DE97;
+  --cream-bg:       #FDF8F0;
+  --cream-deep:     #FAF3E8;
+  --charcoal:       #2C2C2C;
+  --charcoal-light: #5a5a5a;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ─── Base Resets ────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  /* Fixed nav uses h-14 (3.5rem); keeps anchor jumps and hero copy below the bar */
+  scroll-padding-top: 3.5rem;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Lato", sans-serif;
+  background-color: var(--cream-bg);
+  color: var(--charcoal);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* ─── Custom Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--cream-bg); }
+::-webkit-scrollbar-thumb {
+  background: var(--gold-primary);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--gold-light); }
+
+/* ─── Font Utility Classes ───────────────────────────────────────── */
+.font-script  { font-family: "Great Vibes", cursive; }
+.font-display { font-family: "Playfair Display", serif; }
+.font-body    { font-family: "Lato", sans-serif; }
+
+/* ─── Gold Text Gradient ─────────────────────────────────────────── */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #C9973A 0%, #E8B238 45%, #F5DE97 65%, #C9973A 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ─── Gold Divider ───────────────────────────────────────────────── */
+.gold-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-primary), var(--gold-shimmer), var(--gold-primary), transparent);
+}
+
+/* ─── Mandala SVG Animation ──────────────────────────────────────── */
+.mandala-spin { animation: spin 60s linear infinite; }
+.mandala-spin-reverse { animation: spin 45s linear infinite reverse; }
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ─── Section Padding ────────────────────────────────────────────── */
+.section-pad { padding: 5rem 1.5rem; }
+
+@media (min-width: 768px) {
+  .section-pad { padding: 7rem 2rem; }
+}
+
+@media (min-width: 1024px) {
+  .section-pad { padding: 8rem 4rem; }
+}
+
+/* ─── Gallery Hover ──────────────────────────────────────────────── */
+.gallery-item {
+  overflow: hidden;
+  border-radius: 0.5rem;
+  position: relative;
+}
+
+.gallery-item img {
+  transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.gallery-item:hover img {
+  transform: scale(1.08);
+}
+
+/* ─── Form Focus States ──────────────────────────────────────────── */
+.form-input:focus {
+  outline: none;
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 0 3px rgba(201,151,58,0.15);
+}
+
+/* ─── Shadow utilities ───────────────────────────────────────────── */
+.shadow-gold-sm  { box-shadow: 0 2px 8px rgba(201,151,58,0.30); }
+.shadow-luxury   { box-shadow: 0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(201,151,58,0.20); }
+.shadow-gold-glow { box-shadow: 0 0 20px rgba(201,151,58,0.35), 0 0 60px rgba(201,151,58,0.15); }
