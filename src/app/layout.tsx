@@ -2,6 +2,10 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/icon.svg", type: "image/svg+xml" }],
+  },
   title: "Achini & Chinthaka | Wedding Invitation — May 08, 2026",
   description:
     "You are cordially invited to the wedding of Achini Nanayakkara and Chinthaka Lokuliyana. A traditional Kandyan celebration at Grandeeza Hotel, Negombo, on May 08, 2026.",
