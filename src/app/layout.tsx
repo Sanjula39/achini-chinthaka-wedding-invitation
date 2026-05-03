@@ -3,8 +3,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
-    apple: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: [{ url: "/favicon.ico", sizes: "180x180" }],
   },
   title: "Achini & Chinthaka | Wedding Invitation — May 08, 2026",
   description:
